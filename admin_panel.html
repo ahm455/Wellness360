@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card bg-dark text-light p-4 shadow-lg">
+        <h1 class="text-center mb-4"><i class="fas fa-users-cog"></i> Admin Panel</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} text-center">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Add User Button -->
+        <div class="text-end mb-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="fas fa-user-plus"></i> Add User
+            </button>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table class="table table-dark table-striped table-bordered align-middle">
+                <thead class="table-secondary text-dark">
+                    <tr>
+                        <th>UserID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.UserID }}</td>
+                        <td>{{ user.Name }}</td>
+                        <td>{{ user.Email }}</td>
+                        <td>{{ user.Role }}</td>
+                        <td>
+                            {% if user.Role.lower() != 'admin' %}
+                                <a href="{{ url_for('make_admin', user_id=user.UserID) }}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-user-shield"></i> Make Admin
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('remove_admin', user_id=user.UserID) }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-user-minus"></i> Remove Admin
+                                </a>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('delete_user', user_id=user.UserID) }}" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No users found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Admin Tools -->
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('activity_logs') }}" class="btn btn-outline-light me-2">
+                <i class="fas fa-clipboard-list"></i> View Activity Logs
+            </a>
+            <a href="{{ url_for('system_settings') }}" class="btn btn-outline-info">
+                <i class="fas fa-cogs"></i> System Settings
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ url_for('add_user') }}">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control bg-dark text-light border-secondary" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control bg-dark text-light border-secondary" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control bg-dark text-light border-secondary" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select bg-dark text-light border-secondary">
+                            <option value="User">User</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="submit" class="btn btn-primary">Add User</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

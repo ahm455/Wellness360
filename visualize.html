@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-light">Health Trends</h2>
+    <canvas id="weightChart" height="100"></canvas>
+    <canvas id="caloriesChart" height="100" class="mt-5"></canvas>
+    <canvas id="stepsChart" height="100" class="mt-5"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const records = {{ records | tojson }};
+
+    const labels = records.map(r => r.date);
+
+    const weightData = {
+        labels,
+        datasets: [{
+            label: 'Weight (kg)',
+            data: records.map(r => r.weight),
+            borderColor: '#bb86fc',
+            fill: false,
+            tension: 0.1
+        }]
+    };
+
+    const caloriesData = {
+        labels,
+        datasets: [{
+            label: 'Calories',
+            data: records.map(r => r.calories),
+            borderColor: '#03dac6',
+            fill: false,
+            tension: 0.1
+        }]
+    };
+
+    const stepsData = {
+        labels,
+        datasets: [{
+            label: 'Steps',
+            data: records.map(r => r.steps),
+            borderColor: '#ffb74d',
+            fill: false,
+            tension: 0.1
+        }]
+    };
+
+    new Chart(document.getElementById('weightChart'), { type: 'line', data: weightData });
+    new Chart(document.getElementById('caloriesChart'), { type: 'line', data: caloriesData });
+    new Chart(document.getElementById('stepsChart'), { type: 'line', data: stepsData });
+</script>
+{% endblock %}

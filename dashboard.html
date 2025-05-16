@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Wellness360</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --dark-bg: #121212;
+            --darker-bg: #0d0d0d;
+            --card-bg: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --accent-color: #00cec9;
+            --border-color: #333333;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+        }
+        
+        .card-header {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .card-body {
+            color: var(--text-primary);
+        }
+        
+        .card-body h1, 
+        .card-body h2, 
+        .card-body h3, 
+        .card-body h4, 
+        .card-body h5 {
+            color: var(--text-primary);
+        }
+        
+        .table {
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        
+        .table th, .table td {
+            border-top: 1px solid var(--border-color);
+            padding: 12px 16px;
+        }
+        
+        .table thead th {
+            border-bottom: 2px solid var(--border-color);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--text-primary);
+        }
+        
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        .empty-state h5 {
+            color: var(--text-primary);
+        }
+        
+        .dropdown-menu {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .dropdown-item {
+            color: var(--text-primary);
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        
+        .dropdown-divider {
+            border-color: var(--border-color);
+        }
+        
+        .form-control {
+            background-color: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus {
+            background-color: var(--darker-bg);
+            color: var(--text-primary);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25);
+        }
+        
+        hr {
+            border-color: var(--border-color);
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .btn-outline-light {
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .badge {
+            font-weight: 500;
+        }
+        
+        .btn-group .btn {
+            margin-right: 5px;
+        }
+        
+        /* Summary cards specific styling */
+        .card .card-body.text-center h3 {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .card .card-body.text-center h4 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .card .card-body.text-center .text-muted {
+            color: var(--text-secondary) !important;
+            font-size: 0.9rem;
+        }
+        
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--darker-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Top Navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <!-- Search Form -->
+            <form class="d-flex flex-grow-1 me-2" method="GET" action="{{ url_for('search') }}">
+                <input class="form-control me-2" type="search" name="q" placeholder="Search..." 
+                       value="{{ request.args.get('q', '') }}" aria-label="Search">
+                <button class="btn btn-outline-light" type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+
+            <!-- User Menu -->
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="userMenu" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle me-1"></i> {{ session.get('name', 'User') }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                    <li><a class="dropdown-item" href="{{ url_for('profile') }}">
+                        <i class="fas fa-user-cog me-1"></i> Profile
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('change_password') }}">
+                        <i class="fas fa-key me-1"></i> Change Password
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Welcome Header -->
+        <div class="mb-4">
+            <h2 class="mb-2"><i class="fas fa-home me-2"></i>Dashboard</h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-calendar-day me-1"></i> {{ current_date }}
+                {% if request.args.get('q') %}
+                <span class="ms-3"><i class="fas fa-search me-1"></i> Searching: "{{ request.args.get('q') }}"</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="d-flex flex-wrap mb-4 gap-2">
+            <a href="{{ url_for('log_health') }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i> Add Health Data
+            </a>
+            <a href="{{ url_for('add_reminder') }}" class="btn btn-info">
+                <i class="fas fa-bell me-1"></i> Add Reminder
+            </a>
+            <a href="{{ url_for('set_goal') }}" class="btn btn-primary">
+                <i class="fas fa-bullseye me-1"></i> Set Goal
+            </a>
+            <a href="{{ url_for('upload_record') }}" class="btn btn-warning">
+                <i class="fas fa-file-upload me-1"></i> Upload Record
+            </a>
+            <a href="{{ url_for('view_records') }}" class="btn btn-secondary">
+                <i class="fas fa-folder-open me-1"></i> View Records
+            </a>
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_panel') }}" class="btn btn-danger">
+                <i class="fas fa-tools me-1"></i> Admin Panel
+            </a>
+            {% endif %}
+        </div>
+
+        <hr class="border-secondary my-4">
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <!-- Calories Card -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3><i class="fas fa-fire text-warning me-2"></i> Calories</h3>
+                        <h4>
+                            {% if health_data %}
+                                {{ health_data|selectattr('EntryType', 'equalto', 'Meal')|map(attribute='Calories')|sum|default(0)|int }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted">Total Calories</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercise Card -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3><i class="fas fa-running text-info me-2"></i> Exercise</h3>
+                        <h4>
+                            {% if health_data %}
+                                {{ health_data|selectattr('EntryType', 'equalto', 'Workout')|map(attribute='DurationMinutes')|sum|default(0)|int }} mins
+                            {% else %}
+                                0 mins
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted">Total Exercise</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reminders Card -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3><i class="fas fa-bell text-primary me-2"></i> Reminders</h3>
+                        <h4>{{ reminders|length }}</h4>
+                        <p class="text-muted">Active Reminders</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Health Data -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-heartbeat me-2"></i> Recent Health Data</span>
+                <a href="{{ url_for('log_health') }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus"></i> Add New
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if health_data %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Details</th>
+                                <th>Calories</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in health_data %}
+                            <tr>
+                                <td>{{ entry.EntryDate.strftime('%b %d, %Y') if entry.EntryDate else 'N/A' }}</td>
+                                <td>{{ entry.EntryType }}</td>
+                                <td>{{ entry.Category }}</td>
+                                <td>
+                                    {% if entry.EntryType == 'Meal' %}
+                                        <i class="fas fa-utensils me-1"></i> {{ entry.Description }}
+                                    {% elif entry.EntryType == 'Workout' %}
+                                        <i class="fas fa-running me-1"></i> {{ entry.Description }}
+                                    {% else %}
+                                        {{ entry.Description }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ entry.Calories if entry.Calories is not none else '-' }}</td>
+                                <td>{{ entry.DurationMinutes if entry.DurationMinutes is not none else '-' }} mins</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-heartbeat"></i>
+                    <h5 class="mt-3">No health data found</h5>
+                    <p class="text-muted">Start by adding your first health entry</p>
+                    <a href="{{ url_for('log_health') }}" class="btn btn-success mt-2">
+                        <i class="fas fa-plus me-1"></i> Add Entry
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Reminders Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-bell me-2"></i> Upcoming Reminders</span>
+                <a href="{{ url_for('add_reminder') }}" class="btn btn-sm btn-info">
+                    <i class="fas fa-plus"></i> Add New
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if reminders %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reminder in reminders %}
+                            <tr>
+                                <td>{{ reminder.ReminderType }}</td>
+                                <td>{{ reminder.ReminderDate.strftime('%b %d, %Y') if reminder.ReminderDate else 'N/A' }}</td>
+                                <td>{{ reminder.ReminderTime.strftime('%I:%M %p') if reminder.ReminderTime else '' }}</td>
+                                <td>
+                                    <span class="badge bg-{% if reminder.Status == 'Completed' %}success{% else %}warning{% endif %}">
+                                        {{ reminder.Status }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('edit_reminder', id=reminder.ReminderID) }}" 
+                                           class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('complete_reminder', reminder_id=reminder.ReminderID) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h5 class="mt-3">No active reminders</h5>
+                    <p class="text-muted">Add a reminder to stay on track</p>
+                    <a href="{{ url_for('add_reminder') }}" class="btn btn-info mt-2">
+                        <i class="fas fa-plus me-1"></i> Add Reminder
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Health Trends Chart -->
+        {% if labels and calories_data and duration_data %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-chart-line me-2"></i> Health Trends
+            </div>
+            <div class="card-body">
+                <canvas id="healthChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Medical Records Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-file-medical me-2"></i> Recent Medical Records</span>
+                <a href="{{ url_for('upload_record') }}" class="btn btn-sm btn-warning">
+                    <i class="fas fa-plus"></i> Add New
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if medical_records %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in medical_records %}
+                            <tr>
+                                <td>{{ record.Title }}</td>
+                                <td>{{ record.Description }}</td>
+                                <td>{{ record.RecordDate.strftime('%b %d, %Y') if record.RecordDate else 'N/A' }}</td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('download_record', record_id=record.RecordID) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <form method="POST" action="{{ url_for('delete_record', record_id=record.RecordID) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-file-medical"></i>
+                    <h5 class="mt-3">No medical records found</h5>
+                    <p class="text-muted">Upload your first medical record</p>
+                    <a href="{{ url_for('upload_record') }}" class="btn btn-warning mt-2">
+                        <i class="fas fa-plus me-1"></i> Upload Record
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% if labels and calories_data and duration_data %}
+    <script>
+        // Initialize Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ labels|tojson|safe }},
+                    datasets: [
+                        {
+                            label: 'Calories',
+                            data: {{ calories_data|tojson|safe }},
+                            backgroundColor: 'rgba(187, 134, 252, 0.2)',
+                            borderColor: 'rgba(187, 134, 252, 1)',
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: 'rgba(187, 134, 252, 1)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Exercise Minutes',
+                            data: {{ duration_data|tojson|safe }},
+                            backgroundColor: 'rgba(3, 218, 198, 0.2)',
+                            borderColor: 'rgba(3, 218, 198, 1)',
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: 'rgba(3, 218, 198, 1)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#ffffff',
+                                font: {
+                                    size: 14,
+                                    weight: '600',
+                                    family: "'Segoe UI', sans-serif"
+                                },
+                                padding: 16,
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                boxHeight: 8
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#1e1e1e',
+                            titleColor: '#bb86fc',
+                            bodyColor: '#e0e0e0',
+                            borderColor: '#333',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            bodyFont: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            footerColor: '#b3b3b3',
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            color: '#ffffff',
+                            font: {
+                                size: 16,
+                                weight: '600'
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                                lineWidth: 0.5
+                            },
+                            ticks: {
+                                color: '#b3b3b3',
+                                font: {
+                                    size: 12
+                                },
+                                padding: 10,
+                                callback: function(value) {
+                                    return value % 1 === 0 ? value : '';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                                lineWidth: 0.5
+                            },
+                            ticks: {
+                                color: '#b3b3b3',
+                                font: {
+                                    size: 12
+                                },
+                                padding: 10,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                        axis: 'xy'
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            fill: 'start'
+                        },
+                        point: {
+                            radius: 4,
+                            hoverRadius: 6,
+                            hoverBorderWidth: 2,
+                            backgroundColor: '#1e1e1e'
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

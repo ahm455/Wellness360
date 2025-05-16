@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Your Health Analytics</h2>
+    <canvas id="analyticsChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('analyticsChart').getContext('2d');
+    var analyticsChart = new Chart(ctx, {
+        type: 'line',
+        data: {{ chart_data|safe }},
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Health Data Over Time'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

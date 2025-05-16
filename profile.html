@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-light">Your Profile</h2>
+
+    <!-- Profile Form -->
+    <form method="POST">
+        <!-- Name -->
+        <div class="mb-3">
+            <label for="name" class="form-label text-light">Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ user_name }}" required>
+        </div>
+        
+        <!-- Email -->
+        <div class="mb-3">
+            <label for="email" class="form-label text-light">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ user_email }}" required>
+        </div>
+
+        <!-- Health Preferences -->
+        <div class="mb-3">
+            <label for="health_preferences" class="form-label text-light">Health Preferences</label>
+            <textarea class="form-control" id="health_preferences" name="health_preferences">{{ user_health_preferences }}</textarea>
+        </div>
+
+        <!-- Update Button -->
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+    </form>
+</div>
+{% endblock %}

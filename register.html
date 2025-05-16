@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Wellness360</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body { background-color: #121212; color: #ddd; }
+        .card { background-color: #1e1e1e; color: #ccc; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1); }
+        .form-label { font-weight: bold; color: #bbb; }
+        .form-control { background-color: #2a2a2a; color: #fff; border: 1px solid #444; }
+        .form-control::placeholder { color: #888; }
+        .btn-primary { background-color: #007bff; border: none; width: 100%; }
+        .btn-primary:hover { background-color: #0056b3; }
+        a { color: #bbb; text-decoration: none; }
+        a:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card mx-auto" style="max-width: 400px; margin: 100px auto;">
+            <h1 class="text-center"><i class="fas fa-user-plus"></i> Register</h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} text-center">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('register') }}" class="mt-3">
+                <div class="mb-3">
+                    <label for="name" class="form-label"><i class="fas fa-user"></i> Full Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label"><i class="fas fa-check-circle"></i> Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i> Register</button>
+            </form>
+
+            <p class="mt-3 text-center">Already have an account? <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login here</a></p>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const registerForm = document.getElementById('registerForm');
+      
+      registerForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent default form submission
+  
+        // Reset errors
+        document.querySelectorAll('.error-message').forEach(el => el.classList.add('d-none'));
+        document.getElementById('errorAlert').classList.add('d-none');
+  
+        // Show loading state
+        document.getElementById('submitBtn').disabled = true;
+  
+        // Validate form before submitting
+        if (!validateForm()) {
+          resetSubmitButton();
+          return;
+        }
+  
+        // Submit form via fetch
+        try {
+          const nameVal = document.getElementById('name').value.trim();
+          const emailVal = document.getElementById('email').value.trim();
+          const passVal = document.getElementById('password').value;
+          const confirmVal = document.getElementById('confirm_password').value;
+  
+          const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',  // Ensure Content-Type is application/json
+            },
+            body: JSON.stringify({
+              name: nameVal,
+              email: emailVal,
+              password: passVal,
+              confirm_password: confirmVal
+            })
+          });
+  
+          const data = await response.json(); // Parse JSON response
+  
+          if (data.success) {
+            window.location.href = '/login'; // Redirect to login page if successful
+          } else {
+            showError(data.message || 'Something went wrong');
+          }
+  
+        } catch (error) {
+          showError(error.message);
+          console.error('Error:', error);
+        } finally {
+          resetSubmitButton();
+        }
+      });
+  
+      function validateForm() {
+        let isValid = true;
+        const nameVal = document.getElementById('name').value.trim();
+        const emailVal = document.getElementById('email').value.trim();
+        const passVal = document.getElementById('password').value;
+        const confirmVal = document.getElementById('confirm_password').value;
+  
+        if (!nameVal) {
+          document.getElementById('nameError').textContent = 'Full name is required';
+          document.getElementById('nameError').classList.remove('d-none');
+          isValid = false;
+        }
+  
+        if (!emailVal) {
+          document.getElementById('emailError').textContent = 'Email is required';
+          document.getElementById('emailError').classList.remove('d-none');
+          isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+          document.getElementById('emailError').textContent = 'Please enter a valid email';
+          document.getElementById('emailError').classList.remove('d-none');
+          isValid = false;
+        }
+  
+        if (!passVal) {
+          document.getElementById('passwordError').textContent = 'Password is required';
+          document.getElementById('passwordError').classList.remove('d-none');
+          isValid = false;
+        } else if (passVal.length < 8 || !/\d/.test(passVal)) {
+          document.getElementById('passwordError').textContent = 'Password must be at least 8 characters and include 1 number';
+          document.getElementById('passwordError').classList.remove('d-none');
+          isValid = false;
+        }
+  
+        if (passVal !== confirmVal) {
+          document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
+          document.getElementById('confirmPasswordError').classList.remove('d-none');
+          isValid = false;
+        }
+  
+        return isValid;
+      }
+  
+      function showError(message) {
+        document.getElementById('errorMessage').textContent = message;
+        document.getElementById('errorAlert').classList.remove('d-none');
+      }
+  
+      function resetSubmitButton() {
+        document.getElementById('submitBtn').disabled = false;
+      }
+    });
+  </script>
+  

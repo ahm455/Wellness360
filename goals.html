@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>My Goals</h2>
+    <form method="POST" class="mb-4">
+        <div class="form-group">
+            <label>Goal Type</label>
+            <input name="goal_type" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Target Value</label>
+            <input type="number" step="0.1" name="target_value" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Current Value</label>
+            <input type="number" step="0.1" name="current_value" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" name="start_date" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>End Date</label>
+            <input type="date" name="end_date" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success mt-2">Add Goal</button>
+    </form>
+
+    <h4>Existing Goals</h4>
+    <table class="table table-striped">
+        <thead><tr><th>Type</th><th>Target</th><th>Current</th><th>Start</th><th>End</th></tr></thead>
+        <tbody>
+            {% for goal in goals %}
+            <tr>
+                <td>{{ goal.goal_type }}</td>
+                <td>{{ goal.target_value }}</td>
+                <td>{{ goal.current_value }}</td>
+                <td>{{ goal.start_date }}</td>
+                <td>{{ goal.end_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

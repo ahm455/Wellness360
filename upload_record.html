@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="card shadow-lg mt-4" style="background: #1a1a1a; border: 1px solid #2d2d2d;">
+        <div class="card-body p-4">
+            <h2 class="text-center mb-4" style="color: #e0e0e0;">
+                <i class="fas fa-file-medical me-2" style="color: #6c5ce7;"></i>
+                Upload Medical Record
+            </h2>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" 
+                         style="background: rgba(108, 92, 231, 0.2); border-left: 4px solid #6c5ce7;">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Upload Form -->
+            <form method="POST" enctype="multipart/form-data">
+                <!-- Title -->
+                <div class="mb-3">
+                    <label for="title" class="form-label" style="color: #b8b8b8;">
+                        <i class="fas fa-heading me-2"></i> Record Title
+                    </label>
+                    <input type="text" class="form-control" name="title" id="title" required
+                           style="background: #2d2d2d; border: 1px solid #3d3d3d; color: #fff;">
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="description" class="form-label" style="color: #b8b8b8;">
+                        <i class="fas fa-align-left me-2"></i> Description
+                    </label>
+                    <textarea class="form-control" name="description" id="description" rows="3"
+                              style="background: #2d2d2d; border: 1px solid #3d3d3d; color: #fff;"></textarea>
+                </div>
+
+                <!-- Record Date -->
+                <div class="mb-3">
+                    <label for="record_date" class="form-label" style="color: #b8b8b8;">
+                        <i class="fas fa-calendar-day me-2"></i> Record Date
+                    </label>
+                    <input type="date" class="form-control" name="record_date" id="record_date" required
+                           style="background: #2d2d2d; border: 1px solid #3d3d3d; color: #fff;">
+                </div>
+
+                <!-- File Upload -->
+                <div class="mb-4">
+                    <label for="file" class="form-label" style="color: #b8b8b8;">
+                        <i class="fas fa-file-upload me-2"></i> Upload File (PDF, JPG, PNG)
+                    </label>
+                    <input type="file" class="form-control" name="file" id="file" required
+                           style="background: #2d2d2d; border: 1px solid #3d3d3d; color: #fff;">
+                    <small class="text-muted">Max file size: 5MB</small>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="background: #6c5ce7; border: none;">
+                        <i class="fas fa-upload me-2"></i> Upload Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set default date to today
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        document.getElementById('record_date').value = today.toISOString().substr(0, 10);
+    });
+</script>
+{% endblock %}

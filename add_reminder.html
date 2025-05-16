@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card bg-card">
+        <!-- Form Heading -->
+        <h1 class="text-center mb-4"><i class="fas fa-bell icon"></i> Add Reminder</h1>
+
+        <!-- Form to add a new reminder -->
+        <form method="POST" action="{{ url_for('add_reminder') }}">
+
+            <!-- Reminder Type Dropdown -->
+            <div class="mb-3">
+                <label for="type" class="form-label">
+                    <i class="fas fa-list icon"></i> Type
+                </label>
+                <select class="form-control" id="type" name="type" required onchange="toggleMedicineField()">
+                    <option value="Medication">Medication</option>
+                    <option value="Workout">Workout</option>
+                    <option value="Meal">Meal</option>
+                    <option value="Schedule">Schedule</option>
+                </select>
+            </div>
+
+            <!-- Medicine Name Field (only shown for Medication type) -->
+            <div class="mb-3" id="medicineField" style="display: none;">
+                <label for="medicine_name" class="form-label">
+                    <i class="fas fa-pills icon"></i> Medicine Name
+                </label>
+                <input type="text" class="form-control" id="medicine_name" name="medicine_name">
+            </div>
+
+            <!-- Date Picker -->
+            <div class="mb-3">
+                <label for="date" class="form-label">
+                    <i class="fas fa-calendar icon"></i> Date
+                </label>
+                <input type="date" class="form-control" id="date" name="date" required>
+            </div>
+
+            <!-- Time Picker -->
+            <div class="mb-3">
+                <label for="time" class="form-label">
+                    <i class="fas fa-clock icon"></i> Time
+                </label>
+                <input type="time" class="form-control" id="time" name="time" required>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100 py-2">
+                <i class="fas fa-save me-2"></i> Add Reminder
+            </button>
+            
+            <!-- Back Button -->
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100 mt-3 py-2">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </form>
+    </div>
+</div>
+
+<!-- Script to show/hide the "Medicine Name" input based on selection -->
+<script>
+    function toggleMedicineField() {
+        const type = document.getElementById('type').value;
+        const medicineField = document.getElementById('medicineField');
+        medicineField.style.display = (type === 'Medication') ? 'block' : 'none';
+    }
+
+    // Ensure proper display state on page load if "Medication" is selected by default
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleMedicineField();
+        
+        // Set default time to next hour
+        const now = new Date();
+        const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+        document.getElementById('time').value = nextHour.toTimeString().substring(0, 5);
+        
+        // Set default date to today
+        document.getElementById('date').valueAsDate = new Date();
+    });
+</script>
+
+<style>
+    /* Additional styles specific to this page */
+    .card {
+        background-color: var(--card-bg);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        padding: 2rem;
+    }
+    
+    .form-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        background-color: #2d2d2d;
+        border: 1px solid #3d3d3d;
+        color: var(--text-primary);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        background-color: #333;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25);
+        color: var(--text-primary);
+    }
+    
+    .icon {
+        margin-right: 8px;
+        color: var(--secondary-color);
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-primary:hover {
+        background-color: #5a4bd1;
+        border-color: #5a4bd1;
+    }
+    
+    .btn-outline-secondary {
+        border-color: #444;
+        color: var(--text-secondary);
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #333;
+        border-color: #555;
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
